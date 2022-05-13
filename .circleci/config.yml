@@ -17,7 +17,6 @@ workflows:
                           only:
                               - master
                               - circleci
-                              - circle-ci-pcloud
                               - /feature.*/
 jobs:
     build:
