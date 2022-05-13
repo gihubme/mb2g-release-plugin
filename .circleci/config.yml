@@ -52,7 +52,7 @@ jobs:
                       - ~/.m2
                   key: v1-dependencies-{{ checksum "pom.xml" }}
 
-            - run: echo "build job, commit message >> ${env.GIT_COMMIT_MESSAGE}"
+            - run: echo "build job, commit message >> $GIT_COMMIT_MESSAGE"
             - run: git config user.email "n.karakin@qmul.ac.uk"
             - run: git config user.name "Via CircleCI Build at gihubme"
             # run tests!
