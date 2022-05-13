@@ -50,9 +50,6 @@ jobs:
 
         steps:
             - checkout
-            - ecm/export_commit
-                  - run: |
-                  echo "<< parameters.commit-msg >>  << parameters.AppName-msg >>"
 
             # Download and cache dependencies
             - restore_cache:
