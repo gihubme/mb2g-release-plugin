@@ -8,7 +8,6 @@ orbs:
 workflows:
     my-workflow:
         jobs:
-            - export_git_commit_message
             - build:
                   context:
                       - PCLOUD
