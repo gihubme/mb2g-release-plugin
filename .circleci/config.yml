@@ -14,10 +14,10 @@ jobs: # a collection of steps
             # documented at https://circleci.com/docs/2.0/circleci-images/
             # - image: circleci/postgres:9.4
 
-            working_directory: ~/repo
-            environment:
-                # Customize the JVM maximum heap limit
-                MAVEN_OPTS: -Xmx3200m
+        working_directory: ~/repo
+        environment:
+            # Customize the JVM maximum heap limit
+            MAVEN_OPTS: -Xmx3200m
 
         steps:
             - checkout
@@ -28,37 +28,48 @@ jobs: # a collection of steps
                   - v1-dependencies-{{ checksum "pom.xml" }}
                   # fallback to using the latest cache if no exact match is found
                   - v1-dependencies-
-                - run: mvn dependency:go-offline
-                - save_cache:
-                    paths:
-                      - ~/.m2
-                    key: v1-dependencies-{{ checksum "pom.xml" }}
-                - run: git config user.email "n.karakin@qmul.ac.uk"
-                - run: git config user.name "Via CircleCI Build at gihubme"
-                - when:
-                    condition:
-                        equal: [[ $GIT_COMMIT_MESSAGE == */"[majour]/"* ]]
-                    steps:
-                        - run: echo "build job, commit message with /"[majour]/" >> $GIT_COMMIT_MESSAGE"
-                        - run: mvn --batch-mode build-helper:parse-version versions:set -DnewVersion=${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT versions:commit
-                        - run: mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
-                - when:
-                    condition:
-                        equal: [ [ $GIT_COMMIT_MESSAGE != */"[ majour ]/"* ] ]
-                    steps:
-                        - run: echo "build job, commit message without /"[majour]/" >> $GIT_COMMIT_MESSAGE"
-                        - run: mvn --batch-mode build-helper:parse-version versions:set -DnewVersion=${parsedVersion.MajorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT versions:commit
-                        - run: mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
+            - run: mvn dependency:go-offline
+            - save_cache:
+                paths:
+                    - ~/.m2
+                key: v1-dependencies-{{ checksum "pom.xml" }}
+            - run: git config user.email "n.karakin@qmul.ac.uk"
+            - run: git config user.name "Via CircleCI Build at gihubme"
+            - when:
+                condition:
+                    matches:
+                        pattern: '.*\[major\].*'
+                        value: $GIT_COMMIT_MESSAGE
+#                    equal: [ $GIT_COMMIT_MESSAGE == */"[major]/"* ]
+                steps:
+                    - run: echo "build job, commit message with /"[major]/" >> $GIT_COMMIT_MESSAGE"
+                    - run: mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT' versions:commit
+                    - run: mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
+            - when:
+                condition:
+                    not:
+                        matches:
+                            pattern: '.*\[major\].*'
+                            value:  $GIT_COMMIT_MESSAGE
+#                    equal: [ $GIT_COMMIT_MESSAGE != */"[major]/"* ]
+                steps:
+                    - run: echo "build job, commit message without /"[major]/" >> $GIT_COMMIT_MESSAGE"
+                    - run: mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT' versions:commit
+                    - run: mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
 
     build_master:
         docker:
             - image: cimg/openjdk:11.0
-            working_directory: ~/repo
-            environment:
-                # Customize the JVM maximum heap limit
-                MAVEN_OPTS: -Xmx3200m
+        working_directory: ~/repo
+        environment:
+            # Customize the JVM maximum heap limit
+            MAVEN_OPTS: -Xmx3200m
         steps:
+            - add_ssh_keys:
+                  fingerprints:
+                      - "18:35:3e:62:a2:eb:c8:87:28:2a:ce:da:63:9d:b7:a9"
             - checkout
+
             # Download and cache dependencies
             - restore_cache:
                   keys:
@@ -73,15 +84,28 @@ jobs: # a collection of steps
             # run tests and update snapshot versions!
             - run:
                   name: build-master-step
-                  command: mvn clean verify && mvn --batch-mode release:update-versions
+                  command: |
+                      mvn clean verify && \
+                      mvn --batch-mode build-helper:parse-version \
+                      versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
+                      versions:commit
+            - run:
+                  name: build-master-step
+                  command: |
+                      git config user.email "n.karakin@qmul.ac.uk"
+                      git config user.name "Via CircleCI Build at gihubme"
+                      git status
+                      git add pom.xml
+                      git commit -m "Updating snapshot version [build-helper-maven-plugin] [skip ci]"
+                      git push origin main
 
     build_feature:
         docker:
             - image: cimg/openjdk:11.0
-            working_directory: ~/repo
-            environment:
-                # Customize the JVM maximum heap limit
-                MAVEN_OPTS: -Xmx3200m
+        working_directory: ~/repo
+        environment:
+            # Customize the JVM maximum heap limit
+            MAVEN_OPTS: -Xmx3200m
         steps:
             - checkout
             # Download and cache dependencies
@@ -116,7 +140,7 @@ workflows:
                   filters:
                       branches:
                           only:
-                              - master
+                              - main
     build_feature:
         jobs:
             - build_feature:
