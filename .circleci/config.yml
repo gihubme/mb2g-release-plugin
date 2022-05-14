@@ -8,8 +8,7 @@ orbs:
 jobs: # a collection of steps
     build_prod:
         docker:
-            # specify the version you desire here
-            - image: circleci/openjdk:11-browsers-legacy
+            - image: cimg/openjdk:11.0
             # Specify service dependencies here if necessary
             # CircleCI maintains a library of pre-built images
             # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -53,8 +52,7 @@ jobs: # a collection of steps
 
     build_master:
         docker:
-            # specify the version you desire here
-            - image: circleci/openjdk:11-browsers-legacy
+            - image: cimg/openjdk:11.0
             working_directory: ~/repo
             environment:
                 # Customize the JVM maximum heap limit
@@ -79,8 +77,7 @@ jobs: # a collection of steps
 
     build_feature:
         docker:
-            # specify the version you desire here
-            - image: circleci/openjdk:11-browsers-legacy
+            - image: cimg/openjdk:11.0
             working_directory: ~/repo
             environment:
                 # Customize the JVM maximum heap limit
