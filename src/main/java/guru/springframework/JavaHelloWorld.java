@@ -10,3 +10,4 @@ public class JavaHelloWorld {
     }
     public String getChao(String s){return "Chao 2 "+s;}
 }
+
