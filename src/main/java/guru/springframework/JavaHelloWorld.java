@@ -8,6 +8,6 @@ public class JavaHelloWorld {
     public String getHello(){
         return "Hello World";
     }
-    public String getChao(String s){return "Chao 2 "+s;}
+    public String getChao(String s){return "Chao 4 "+s;}
 }
 
