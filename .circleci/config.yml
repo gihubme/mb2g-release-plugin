@@ -93,7 +93,11 @@ jobs: # a collection of steps
                   command: |
                       mvn clean verify && \
                       mvn --batch-mode build-helper:parse-version \
-                      versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
+                      versions:set \
+                      -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
+                      -DgenerateBackupPoms=false \
+                      -DprocessAllModules \
+                      -DgenerateBackupPoms=false \
                       versions:commit
             - run:
                   name: commit-and-push
@@ -104,6 +108,8 @@ jobs: # a collection of steps
                       git add pom.xml
                       git commit -m "Updating snapshot version [build-helper-maven-plugin] [skip ci]"
                       git push origin main
+                      echo "This is pipeline ID << pipeline.id >>"
+                      echo "This is circle branch: ${CIRCLE_BRANCH}"
 
     build_feature:
         docker:
