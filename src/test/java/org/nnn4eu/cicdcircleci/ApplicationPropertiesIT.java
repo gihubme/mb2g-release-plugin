@@ -1,27 +1,27 @@
 package org.nnn4eu.cicdcircleci;
 
-import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.hamcrest.MatcherAssert;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest(properties = { "example.firstProperty=annotation" })
-@ActiveProfiles("test")
+@SpringBootTest(properties = {"example.firstProperty=annotation"})
+@TestPropertySource(locations = "classpath:application-test.properties")
 public class ApplicationPropertiesIT {
     @Value("${server.port}")
     String serverPort;// from application-test.properties
-    @Value("${server.port}")
+    @Value("${test1}")
     String test1;// from application-test.properties
-    @Value("management.server.port")
+    @Value("${management.server.port}")
     String managmentPort; // from application.properties
 
-    @Value("example.firstProperty")
+    @Value("${example.firstProperty}")
     String firstProperty; // from application.properties
+
     @Test
-    void test(){
+    void test() {
         MatcherAssert.assertThat(serverPort, Matchers.equalTo("8082"));
         MatcherAssert.assertThat(managmentPort, Matchers.equalTo("9090"));
         MatcherAssert.assertThat(test1, Matchers.containsString("some value"));
