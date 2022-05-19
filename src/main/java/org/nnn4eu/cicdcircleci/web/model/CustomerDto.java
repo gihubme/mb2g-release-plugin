@@ -11,7 +11,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.EnumMap;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -29,13 +29,13 @@ public class CustomerDto implements Serializable {
     private String secondName;
 
     @NotEmpty
-    private EnumMap<ContactTypeE, MAddressDto> addresses;
+    private Map<ContactTypeE, MAddressDto> addresses;
 
     @NotEmpty
-    private EnumMap<ContactTypeE, MEmailDto> emails;
+    private Map<ContactTypeE, MEmailDto> emails;
 
     @Size(min = 0, max = 10)
-    private EnumMap<ContactTypeE, MPhoneDto> phones;
+    private Map<ContactTypeE, MPhoneDto> phones;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private OffsetDateTime createdDate;

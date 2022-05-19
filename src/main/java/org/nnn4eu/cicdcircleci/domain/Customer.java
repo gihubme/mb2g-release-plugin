@@ -1,6 +1,5 @@
 package org.nnn4eu.cicdcircleci.domain;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,7 +37,6 @@ public class Customer {
     @Size(min = 2, max = 100)
     private String secondName;
 
-    @Builder
     public Customer(Timestamp createdDate, Timestamp lastModifiedDate, String firstName, String secondName) {
         this.createdDate = createdDate;
         this.lastModifiedDate = lastModifiedDate;

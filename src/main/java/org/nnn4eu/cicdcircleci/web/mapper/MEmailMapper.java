@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.nnn4eu.cicdcircleci.domain.MEmail;
 import org.nnn4eu.cicdcircleci.web.model.MEmailDto;
 
-@Mapper(uses = {DateMapper.class})
+@Mapper(componentModel = "spring", uses = {DateMapper.class})
 public interface MEmailMapper {
     MEmailDto mEmailDtoToMEmeail(MEmail ts);
 
