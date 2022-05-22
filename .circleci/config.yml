@@ -43,10 +43,14 @@ jobs: # a collection of steps
           #                    equal: [ $GIT_COMMIT_MESSAGE == */"[major]/"* ]
           steps:
             - run:
-                name: increase-and-release-minor-version-step
+                name: increase-minor-version-step
                 command: |
                   echo "build job, commit message with /"[major]/" >> $GIT_COMMIT_MESSAGE"
                   mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT' versions:commit
+            - run:
+                name: release-minor-version-step
+                command: |
+                  echo "build job, commit message with /"[major]/" >> $GIT_COMMIT_MESSAGE"
                   mvn --batch-mode clean -DskipTests release:prepare release:perform -s .circleci/settings.xml
       - when:
           condition:
@@ -57,10 +61,14 @@ jobs: # a collection of steps
           #                    equal: [ $GIT_COMMIT_MESSAGE != */"[major]/"* ]
           steps:
             - run:
-                name: increase-and-release-major-version-step
+                name: increase-major-version-step
                 command: |
                   echo "build job, commit message without /"[major]/" >> $GIT_COMMIT_MESSAGE"
                   mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT' versions:commit
+            - run:
+                name: release-major-version-step
+                command: |
+                  echo "build job, commit message without /"[major]/" >> $GIT_COMMIT_MESSAGE"
                   mvn --batch-mode clean -DskipTests release:prepare release:perform -s .circleci/settings.xml
 
   build_master:
