@@ -91,15 +91,14 @@ jobs: # a collection of steps
       - run:
           name: increase-snapshot-version
           command: |
-                     mvn clean test && \
-            #            mvn clean verify && \
-                     mvn --batch-mode build-helper:parse-version \
-                     versions:set \
-                     -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
-                     -DgenerateBackupPoms=false \
-                     -DprocessAllModules \
-                     -DgenerateBackupPoms=false \
-                     versions:commit
+            mvn clean test && \
+            mvn --batch-mode build-helper:parse-version \
+            versions:set \
+            -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
+            -DgenerateBackupPoms=false \
+            -DprocessAllModules \
+            -DgenerateBackupPoms=false \
+            versions:commit
       - run:
           name: commit-and-push
           command: |
