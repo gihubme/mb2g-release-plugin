@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.nnn4eu</groupId>
     <artifactId>cicd-circleci</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <name>cicd-circleci</name>
     <description>Spring Boot Demo project for CICD with circleci</description>
     <properties>
@@ -174,6 +174,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>3.0.0-M4</version>
                 <configuration>
+                    <arguments>$(arguments)</arguments>
                     <scmCommentPrefix>[maven-release-plugin] [skip ci]</scmCommentPrefix>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <tagNameFormat>v@{project.version}</tagNameFormat>

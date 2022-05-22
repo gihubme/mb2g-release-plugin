@@ -47,7 +47,7 @@ jobs: # a collection of steps
                 command: |
                   echo "build job, commit message with /"[major]/" >> $GIT_COMMIT_MESSAGE"
                   mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT' versions:commit
-                  mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
+                  mvn --batch-mode clean -DskipTests release:prepare release:perform -s .circleci/settings.xml
       - when:
           condition:
             not:
