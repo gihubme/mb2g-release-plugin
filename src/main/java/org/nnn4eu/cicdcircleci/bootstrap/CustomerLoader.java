@@ -107,7 +107,7 @@ public class CustomerLoader implements CommandLineRunner {
         return MAddress.builder()
                 .name(name)
                 .city("City-" + Util.randomString(5))
-                .housNumber(rand.nextInt() + "")
+                .housNumber(rand.nextInt(100) + "")
                 .street("Street-" + Util.randomString(4))
                 .zip(Util.randomString(5))
                 .contactType(type)

@@ -9,6 +9,7 @@ import org.nnn4eu.cicdcircleci.web.model.ContactTypeE;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -45,10 +46,14 @@ public class Customer {
     }
 
     public void setAddresses(Map<ContactTypeE, MAddress> addresses) {
-        addresses.keySet().stream().forEach(key -> addAddress(key, addresses.get(key)));
+        if (addresses != null) {
+            addresses.keySet().stream().forEach(key -> addAddress(key, addresses.get(key)));
+        } else {
+            this.addresses = null;
+        }
     }
 
-    public void addAddress(ContactTypeE type, MAddress address) {
+    public void addAddress(@NotNull ContactTypeE type, @NotNull MAddress address) {
         if (this.addresses == null) {
             this.addresses = new HashMap<>();
         }
@@ -57,10 +62,14 @@ public class Customer {
     }
 
     public void setEmails(Map<ContactTypeE, MEmail> emails) {
-        emails.keySet().stream().forEach(key -> addEmail(key, emails.get(key)));
+        if (emails != null) {
+            emails.keySet().stream().forEach(key -> addEmail(key, emails.get(key)));
+        } else {
+            this.emails = null;
+        }
     }
 
-    public void addEmail(ContactTypeE type, MEmail email) {
+    public void addEmail(@NotNull ContactTypeE type, @NotNull MEmail email) {
         if (this.emails == null) {
             this.emails = new HashMap<>();
         }
@@ -69,12 +78,16 @@ public class Customer {
     }
 
     public void setPhones(Map<ContactTypeE, MPhone> phones) {
-        for (Map.Entry<ContactTypeE, MPhone> entry : phones.entrySet()) {
-            this.addPhone(entry.getKey(), entry.getValue());
+        if (phones != null) {
+            for (Map.Entry<ContactTypeE, MPhone> entry : phones.entrySet()) {
+                this.addPhone(entry.getKey(), entry.getValue());
+            }
+        } else {
+            this.phones = null;
         }
     }
 
-    public void addPhone(ContactTypeE type, MPhone phone) {
+    public void addPhone(@NotNull ContactTypeE type, @NotNull MPhone phone) {
         if (this.phones == null) {
             this.phones = new HashMap<>();
         }

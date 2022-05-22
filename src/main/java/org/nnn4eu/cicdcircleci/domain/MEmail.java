@@ -7,6 +7,7 @@ import org.nnn4eu.cicdcircleci.web.model.ContactTypeE;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.sql.Timestamp;
 
@@ -30,8 +31,9 @@ public class MEmail {
     @UpdateTimestamp
     private Timestamp lastModifiedDate;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "contactType", nullable = false)
+    @Column(name = "contactType")
     private ContactTypeE contactType;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

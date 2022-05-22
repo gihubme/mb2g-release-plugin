@@ -9,6 +9,7 @@ import org.nnn4eu.cicdcircleci.shared.AppConstant;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 
@@ -19,6 +20,8 @@ import java.time.OffsetDateTime;
 public class MEmailDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long version;
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Email is not valid", regexp = AppConstant.emailRegex)
     @Size(min = 3, max = 100)
@@ -28,4 +31,7 @@ public class MEmailDto {
     private OffsetDateTime createdDate;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private OffsetDateTime lastModifiedDate;
+
+    @NotNull
+    private ContactTypeE contactType;
 }

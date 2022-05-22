@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest(properties = {"example.firstProperty=annotation"})
-@TestPropertySource(locations = "classpath:application-test.properties")
+@SpringBootTest
+@TestPropertySource(locations = {"classpath:application-test.properties"},
+                    properties = {"example.firstProperty=annotation"})
 public class ApplicationPropertiesIT {
     @Value("${server.port}")
     String serverPort;// from application-test.properties
