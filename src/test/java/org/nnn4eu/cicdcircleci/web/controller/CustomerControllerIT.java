@@ -1,6 +1,8 @@
 package org.nnn4eu.cicdcircleci.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -68,7 +70,9 @@ class CustomerControllerIT {
 
     @BeforeEach
     void setUp() {
-        validDto = DataDtoGenerator.generateCustomerDto();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        validDto = DataDtoGenerator.generateCustomerDto(true);
     }
 
     @DisplayName("Get /getCustomer 200")
@@ -95,7 +99,7 @@ class CustomerControllerIT {
     @DisplayName("Violations")
     @Test
     void whenInvalid_thenShouldGiveConstraintViolations() throws Exception {
-        CustomerDto invalidDto = DataDtoGenerator.generateCustomerDto();
+        CustomerDto invalidDto = DataDtoGenerator.generateCustomerDto(true);
         invalidDto.setSecondName("B");
         invalidDto.setFirstName(null);
         invalidDto.setEmails(new EnumMap<>(ContactTypeE.class));
@@ -159,7 +163,7 @@ class CustomerControllerIT {
     @Test
     void whenInvalid_thenThrowException() throws Exception {
         //given
-        CustomerDto invalidDto = DataDtoGenerator.generateCustomerDto();
+        CustomerDto invalidDto = DataDtoGenerator.generateCustomerDto(true);
         invalidDto.setSecondName("B");
         invalidDto.setFirstName(null);
         invalidDto.setEmails(new EnumMap<>(ContactTypeE.class));

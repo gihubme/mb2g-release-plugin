@@ -39,10 +39,9 @@ public class CustomerLoader implements CommandLineRunner {
             for (int i = 0; i < num; i++) {
                 String first = "Jo-" + Util.randomString(5);
                 String second = "Thompson-" + Util.randomString(5);
-                Customer customerToSave = Customer.builder()
-                        .firstName(first)
-                        .secondName(second)
-                        .build();
+                Customer customerToSave = new Customer();
+                customerToSave.setFirstName(first);
+                customerToSave.setSecondName(second);
                 customerToSave.setPhones(createPhones(rand));
                 customerToSave.setEmails(createEmails(first, rand));
                 customerToSave.setAddresses(createAddresses(first + " " + second, rand));
@@ -108,7 +107,7 @@ public class CustomerLoader implements CommandLineRunner {
         return MAddress.builder()
                 .name(name)
                 .city("City-" + Util.randomString(5))
-                .housNumber(rand.nextInt() + "")
+                .housNumber(rand.nextInt(100) + "")
                 .street("Street-" + Util.randomString(4))
                 .zip(Util.randomString(5))
                 .contactType(type)

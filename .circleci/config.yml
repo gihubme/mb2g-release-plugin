@@ -4,159 +4,166 @@
 #
 version: 2.1
 orbs:
-    ecm: pay-justice/export-commit-message@0.0.1
+  ecm: pay-justice/export-commit-message@0.0.1
 jobs: # a collection of steps
-    build_prod:
-        docker:
-            - image: cimg/openjdk:11.0
-            # Specify service dependencies here if necessary
-            # CircleCI maintains a library of pre-built images
-            # documented at https://circleci.com/docs/2.0/circleci-images/
-            # - image: circleci/postgres:9.4
+  build_prod:
+    docker:
+      - image: cimg/openjdk:11.0
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
 
-        working_directory: ~/repo
-        environment:
-            # Customize the JVM maximum heap limit
-            MAVEN_OPTS: -Xmx3200m
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m
 
-        steps:
-            - checkout
-            - ecm/export_commit
-            # Download and cache dependencies
-            - restore_cache:
-                keys:
-                  - v1-dependencies-{{ checksum "pom.xml" }}
-                  # fallback to using the latest cache if no exact match is found
-                  - v1-dependencies-
-            - run: mvn dependency:go-offline
-            - save_cache:
-                paths:
-                    - ~/.m2
-                key: v1-dependencies-{{ checksum "pom.xml" }}
-            - run: git config user.email "n.karakin@qmul.ac.uk"
-            - run: git config user.name "Via CircleCI Build at gihubme"
-            - when:
-                condition:
-                    matches:
-                        pattern: '.*\[major\].*'
-                        value: $GIT_COMMIT_MESSAGE
-#                    equal: [ $GIT_COMMIT_MESSAGE == */"[major]/"* ]
-                steps:
-                    - run:
-                          name: increase-and-release-minor-version-step
-                          command: |
-                              echo "build job, commit message with /"[major]/" >> $GIT_COMMIT_MESSAGE"
-                              mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT' versions:commit
-                              mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
-            - when:
-                condition:
-                    not:
-                        matches:
-                            pattern: '.*\[major\].*'
-                            value:  $GIT_COMMIT_MESSAGE
-#                    equal: [ $GIT_COMMIT_MESSAGE != */"[major]/"* ]
-                steps:
-                    - run:
-                        name: increase-and-release-major-version-step
-                        command: |
-                            echo "build job, commit message without /"[major]/" >> $GIT_COMMIT_MESSAGE"
-                            mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT' versions:commit
-                            mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
-
-    build_master:
-        docker:
-            - image: cimg/openjdk:11.0
-        working_directory: ~/repo
-        environment:
-            # Customize the JVM maximum heap limit
-            MAVEN_OPTS: -Xmx3200m
-        steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "18:35:3e:62:a2:eb:c8:87:28:2a:ce:da:63:9d:b7:a9"
-            - checkout
-
-            # Download and cache dependencies
-            - restore_cache:
-                  keys:
-                      - v1-dependencies-{{ checksum "pom.xml" }}
-                      # fallback to using the latest cache if no exact match is found
-                      - v1-dependencies-
-            - run: mvn dependency:go-offline
-            - save_cache:
-                  paths:
-                      - ~/.m2
-                  key: v1-dependencies-{{ checksum "pom.xml" }}
-            # run tests and update snapshot versions!
+    steps:
+      - checkout
+      - ecm/export_commit
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: mvn dependency:go-offline
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      - run: git config user.email "n.karakin@qmul.ac.uk"
+      - run: git config user.name "Via CircleCI Build at gihubme"
+      - when:
+          condition:
+            matches:
+              pattern: '.*\[major\].*'
+              value: $GIT_COMMIT_MESSAGE
+          #                    equal: [ $GIT_COMMIT_MESSAGE == */"[major]/"* ]
+          steps:
             - run:
-                  name: increase-snapshot-version
-                  command: |
-                      mvn clean verify && \
-                      mvn --batch-mode build-helper:parse-version \
-                      versions:set \
-                      -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
-                      -DgenerateBackupPoms=false \
-                      -DprocessAllModules \
-                      -DgenerateBackupPoms=false \
-                      versions:commit
+                name: increase-and-release-minor-version-step
+                command: |
+                  echo "build job, commit message with /"[major]/" >> $GIT_COMMIT_MESSAGE"
+                  mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT' versions:commit
+                  mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
+      - when:
+          condition:
+            not:
+              matches:
+                pattern: '.*\[major\].*'
+                value: $GIT_COMMIT_MESSAGE
+          #                    equal: [ $GIT_COMMIT_MESSAGE != */"[major]/"* ]
+          steps:
             - run:
-                  name: commit-and-push
-                  command: |
-                      git config user.email "n.karakin@qmul.ac.uk"
-                      git config user.name "Via CircleCI Build at gihubme"
-                      git status
-                      git add pom.xml
-                      git commit -m "Updating snapshot version [build-helper-maven-plugin] [skip ci]"
-                      git push origin main
-                      echo "This is pipeline ID << pipeline.id >>"
-                      echo "This is circle branch: ${CIRCLE_BRANCH}"
+                name: increase-and-release-major-version-step
+                command: |
+                  echo "build job, commit message without /"[major]/" >> $GIT_COMMIT_MESSAGE"
+                  mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT' versions:commit
+                  mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
 
-    build_feature:
-        docker:
-            - image: cimg/openjdk:11.0
-        working_directory: ~/repo
-        environment:
-            # Customize the JVM maximum heap limit
-            MAVEN_OPTS: -Xmx3200m
-        steps:
-            - checkout
-            # Download and cache dependencies
-            - restore_cache:
-                  keys:
-                      - v1-dependencies-{{ checksum "pom.xml" }}
-                      # fallback to using the latest cache if no exact match is found
-                      - v1-dependencies-
-            - run: mvn dependency:go-offline
-            - save_cache:
-                  paths:
-                      - ~/.m2
-                  key: v1-dependencies-{{ checksum "pom.xml" }}
-            # run tests!
-            - run:
-                  name: build-feature-step
-                  command: mvn clean verify
+  build_master:
+    docker:
+      - image: cimg/openjdk:11.0
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "18:35:3e:62:a2:eb:c8:87:28:2a:ce:da:63:9d:b7:a9"
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: mvn dependency:go-offline
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      # run tests and update snapshot versions!
+      - run:
+          name: increase-snapshot-version
+          command: |
+            mvn clean verify && \
+            mvn --batch-mode build-helper:parse-version \
+            versions:set \
+            -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}-SNAPSHOT' \
+            -DgenerateBackupPoms=false \
+            -DprocessAllModules \
+            -DgenerateBackupPoms=false \
+            versions:commit
+      - run:
+          name: commit-and-push
+          command: |
+            git config user.email "n.karakin@qmul.ac.uk"
+            git config user.name "Via CircleCI Build at gihubme"
+            git status
+            git add pom.xml
+            git commit -m "Updating snapshot version [build-helper-maven-plugin] [skip ci]"
+            git push origin main
+            echo "This is pipeline ID << pipeline.id >>"
+            echo "This is circle branch: ${CIRCLE_BRANCH}"
+
+  build_feature:
+    # Use "machine" instead of e.g. "docker" for better/faster results
+    machine: true
+    # Uses a "medium" sized machine - maybe increase this to "large" if you pay for CircleCI
+    resource_class: medium
+    #        docker:
+    #            - image: cimg/openjdk:11.0
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: Install module deps
+          command: mvn package install -DskipTests
+      - run: mvn dependency:go-offline
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      # run tests!
+      - run:
+          name: build-feature-step
+          command: mvn clean verify
 
 workflows:
-    build_prod:
-        jobs:
-            - build_prod:
-                  context:
-                      - PCLOUD
-                  filters:
-                      branches:
-                          only:
-                              - prod
-    build_master:
-        jobs:
-            - build_master:
-                  filters:
-                      branches:
-                          only:
-                              - main
-    build_feature:
-        jobs:
-            - build_feature:
-                  filters:
-                      branches:
-                          only:
-                              - /feature.*/
+  build_prod:
+    jobs:
+      - build_prod:
+          context:
+            - PCLOUD
+          filters:
+            branches:
+              only:
+                - prod
+  build_master:
+    jobs:
+      - build_master:
+          filters:
+            branches:
+              only:
+                - main
+  build_feature:
+    jobs:
+      - build_feature:
+          filters:
+            branches:
+              only:
+                - /feature.*/

@@ -10,23 +10,27 @@ import org.springframework.stereotype.Component;
 public class MPhoneMapper {
     private final DateMapper dateMapper;
 
-    public MPhoneDto mPhoneDtoToMPhone(MPhone ts) {
+    public MPhone dtoToMPhone(MPhoneDto ts) {
         if (ts != null) {
-            return MPhoneDto.builder()
-                    .lastModifiedDate(dateMapper.asOffsetDateTime(ts.getLastModifiedDate()))
-                    .createdDate(dateMapper.asOffsetDateTime(ts.getCreatedDate()))
-                    .nationalNumber(ts.getPhone().substring(3))
-                    .countryCode(ts.getPhone().substring(0, 3))
+            return MPhone.builder()
+                    .contactType(ts.getContactType())
+                    .phone(ts.getCountryCode() + ts.getNationalNumber().replace(" ", ""))
                     .build();
         } else {
             return null;
         }
     }
 
-    public MPhone mPhoneToMPhoneDto(MPhoneDto ts) {
+    public MPhoneDto mphoneToDto(MPhone ts) {
         if (ts != null) {
-            return MPhone.builder()
-                    .phone(ts.getCountryCode() + ts.getNationalNumber().replace(" ", ""))
+            return MPhoneDto.builder()
+                    .lastModifiedDate(dateMapper.asOffsetDateTime(ts.getLastModifiedDate()))
+                    .createdDate(dateMapper.asOffsetDateTime(ts.getCreatedDate()))
+                    .version(ts.getVersion())
+                    .id(ts.getId())
+                    .nationalNumber(ts.getPhone().substring(3))
+                    .countryCode(ts.getPhone().substring(0, 3))
+                    .contactType(ts.getContactType())
                     .build();
         } else {
             return null;

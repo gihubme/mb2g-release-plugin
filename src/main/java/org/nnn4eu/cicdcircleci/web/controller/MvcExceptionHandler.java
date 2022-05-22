@@ -6,26 +6,41 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
-import java.util.List;
 
-@ControllerAdvice
+@EnableWebMvc
+@RestControllerAdvice
 public class MvcExceptionHandler {
 
-    @ExceptionHandler(value = {ConstraintViolationException.class})
-    public ResponseEntity<List> validationErrorHandling(ConstraintViolationException e) {
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<String> pageNotFoundExceptionHandling(NoHandlerFoundException e) {
+        String errors = e.getMessage();
+        return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
+    }
 
-        List<String> errors = new ArrayList<>(e.getConstraintViolations().size());
-        e.getConstraintViolations().forEach(constraintViolation -> {
-            errors.add(constraintViolation.getPropertyPath() + " : " + constraintViolation.getMessage());
-        });
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> entityNotFoundExceptionHandling(EntityNotFoundException e) {
+        String errors = e.getMessage();
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {ConstraintViolationException.class})
+    public ResponseEntity<ErrorResult> validationErrorHandling(ConstraintViolationException e) {
+        ErrorResult errorResult = new ErrorResult();
+        e.getConstraintViolations().forEach(constraintViolation -> {
+            errorResult.getFieldErrors()
+                    .add(new FieldValidationError(constraintViolation.getPropertyPath().toString(),
+                            constraintViolation.getMessage()));
+        });
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseBody
@@ -44,7 +59,7 @@ public class MvcExceptionHandler {
     @ExceptionHandler(value = {HttpMessageNotReadableException.class})
     public ResponseEntity<String> httpMessageNotReadableErrorHandling(HttpMessageNotReadableException e) {
         Throwable cause = e.getCause();
-        String errors = cause.getMessage();
+        String errors = (cause != null) ? cause.getMessage() : e.getMessage();
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
