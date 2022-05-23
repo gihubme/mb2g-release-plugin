@@ -7,12 +7,16 @@ orbs:
   ecm: pay-justice/export-commit-message@0.0.1
 jobs: # a collection of steps
   build_prod:
-    docker:
-      - image: cimg/openjdk:11.0
+    # Use "machine" instead of e.g. "docker" for better/faster results
+    machine: true
+    # Uses a "medium" sized machine - maybe increase this to "large" if you pay for CircleCI
+    resource_class: medium
+      #    docker:
+      #      - image: cimg/openjdk:11.0
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+    # documented at https://circleci.com/docs/2.0/circleci-images/
+    # - image: circleci/postgres:9.4
 
     working_directory: ~/repo
     environment:
@@ -43,17 +47,16 @@ jobs: # a collection of steps
           #                    equal: [ $GIT_COMMIT_MESSAGE == */"[major]/"* ]
           steps:
             - run:
-                name: increase-minor-version-step
+                name: increase-major-version-step
                 command: |
                   echo "build job, commit message with /"[major]/" >> \"$GIT_COMMIT_MESSAGE"\"
                   mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT' versions:commit
             - run:
-                name: release-minor-version-step
+                name: release-major-version-step
                 command: |
                   echo "build job, commit message with /"[major]/" >> \"$GIT_COMMIT_MESSAGE"\"
-                  mvn --batch-mode -Darguments='-Dmaven.test.skip=true' release:prepare release:perform -s .circleci/settings.xml
+                  mvn --batch-mode release:prepare release:perform -s .circleci/settings.xml
 
-      #                  mvn --batch-mode clean -DskipTests -Darguments=-DskipTests release:prepare release:perform -s .circleci/settings.xml
       - when:
           condition:
             not:
@@ -63,16 +66,17 @@ jobs: # a collection of steps
           #                    equal: [ $GIT_COMMIT_MESSAGE != */"[major]/"* ]
           steps:
             - run:
-                name: increase-major-version-step
+                name: increase-minor-version-step
                 command: |
                   echo "build job, commit message without /"[major]/" >> \"$GIT_COMMIT_MESSAGE"\"
                   mvn --batch-mode build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT' versions:commit
             - run:
-                name: release-major-version-step
+                name: release-minor-version-step
                 command: |
                   echo "build job, commit message without /"[major]/" >> \"$GIT_COMMIT_MESSAGE"\"
-                  mvn --batch-mode -Darguments='-Dmaven.test.skip=true'  release:prepare release:perform  -s .circleci/settings.xml
-  #  -Darguments="-Dmaven.javadoc.skip=true -Dmaven.test.skipTests=true -Dmaven.test.skip=true"
+                  mvn --batch-mode  release:prepare release:perform  -s .circleci/settings.xml
+  #-Darguments='-Dmaven.test.skip=true'  -Darguments="-Dmaven.javadoc.skip=true -Dmaven.test.skipTests=true -Dmaven.test.skip=true"
+
   build_master:
     docker:
       - image: cimg/openjdk:11.0
@@ -154,24 +158,6 @@ jobs: # a collection of steps
           command: mvn clean verify
 
 workflows:
-  build_minor:
-    jobs:
-      - build_prod:
-          context:
-            - PCLOUD
-          filters:
-            branches:
-              only:
-                - minor
-  build_major:
-    jobs:
-      - build_prod:
-          context:
-            - PCLOUD
-          filters:
-            branches:
-              only:
-                - major
   build_prod:
     jobs:
       - build_prod:
