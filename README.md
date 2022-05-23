@@ -17,7 +17,7 @@
 
 - To create official and bugfix releases on packagecloud
 
-    1. run maven verify and deploy either for minor or major version change
+    1. run maven verify and deploy either for minor or major version change (scripts/minor.sh or scripts/major.sh)
 
 ###### NOT USED ANYMORE
 
